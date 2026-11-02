@@ -27,6 +27,30 @@ tasks.withType(Test) {
         }
 }
 
+
+task copyHtml(type: Copy) {
+    from 'src/main/html'
+    into 'build/reports'
+}
+
+task copyDocs(type: Copy) {
+    dependsOn javadoc
+    from 'build/docs'
+    into 'build/reports'
+}
+
+task reports {
+    dependsOn build, copyHtml, copyDocs
+    description = 'Gathers HTML content and javadocs into build/reports.'
+}
+
+task deployReports(type: Exec) {
+    dependsOn reports
+    // Example command to push the build/reports directory to gh-pages
+    commandLine 'sh', '-c', 'git subtree push --prefix build/reports origin gh-pages'
+}
+
+
 application { //Allows  ./gradlew run --args=path-to-test-data
     mainClass = 'edu.odu.cs.MostCommonWords'
 }
