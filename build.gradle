@@ -46,24 +46,66 @@ task reports {
     description = 'Gathers HTML content and javadocs into build/reports.'
 }
 
-task deployReports(type: Exec) {
-    dependsOn reports
-    description = 'Pushes build/reports to the gh-pages branch cleanly.'
-    
-    commandLine 'sh', '-c', '''
-        git config user.name >/dev/null 2>&1 || git config user.name "Gradle Build"
-        git config user.email >/dev/null 2>&1 || git config user.email "gradle@build.local"
-        
-        # Temporarily stage and commit the ignored build/reports folder
-        git add -f build/reports
-        git commit -m "Temporary deployment commit" || true
-        
-        # Push the build/reports subdirectory to the gh-pages branch
-        git subtree push --prefix build/reports origin gh-pages
-        
-        # Undo the temporary commit on main so your local repository remains clean
-        git reset HEAD~1
-    '''
+def pagesDir = file("${project.rootDir}/build/website-temp").absolutePath
+
+task clearPages(type: Delete) {
+    delete pagesDir
+}
+
+task workTreeAdd(type: Exec, dependsOn: ['clearPages']) { 
+    workingDir = '.'
+    commandLine = ['git', 'worktree', 'add', '-f', pagesDir, 'gh-pages']
+}
+
+task workTreeCheckout(type: Exec, dependsOn: ['workTreeAdd']) { 
+    workingDir = pagesDir
+    commandLine = ['git', 'checkout', 'gh-pages']
+}
+
+task workTree(type: Exec, dependsOn: ['workTreeCheckout']) { 
+    workingDir = pagesDir
+    commandLine = ['git', 'pull']
+}
+
+task copyReports(type: Copy, dependsOn: ['reports', 'workTree']) {
+    from 'build/reports'
+    into pagesDir
+}
+
+task copyWebsite(type: Copy, dependsOn: ['copyReports']) {
+    from file('src/main/html')
+    into pagesDir
+}
+
+task stageWebsite(type: Exec, dependsOn: 'copyWebsite') {
+    workingDir = pagesDir
+    commandLine = ['git', 'add', pagesDir]
+    ignoreExitValue = true
+}
+
+task commitWebsite(type: Exec, dependsOn: 'stageWebsite') {
+    Date now = new Date()
+
+    workingDir = pagesDir
+    commandLine = ['git', 'commit', '-m', 'Updating webpages at ' + now.toString()]
+    ignoreExitValue = true
+}
+
+task pushWebsite(type: Exec, dependsOn: 'commitWebsite') {
+    workingDir = pagesDir
+    commandLine = ['git', 'push']
+    ignoreExitValue = true
+}
+
+task cleanWorkTree(type: Delete, dependsOn: 'pushWebsite') {
+    delete pagesDir
+}
+
+task deployReports(type: Exec, dependsOn: 'cleanWorkTree') {
+    group = "Reporting"
+    description = 'Commit and push website changes to GitHub'
+    workingDir = '.'
+    commandLine = ['git', 'worktree', 'prune']
 }
 
 
