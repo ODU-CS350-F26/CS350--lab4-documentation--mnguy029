@@ -31,13 +31,13 @@ tasks.withType(Test) {
 
 task copyHtml(type: Copy) {
     from 'src/main/html'
-    into 'build/reports'
+    into 'build/reports/tests'
 }
 
 task copyDocs(type: Copy) {
     dependsOn javadoc
     from 'build/docs'
-    into 'build/reports'
+    into 'build/reports/javadoc'
 }
 
 task reports {
