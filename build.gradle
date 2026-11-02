@@ -48,10 +48,9 @@ task reports {
 
 task deployReports(type: Exec) {
     dependsOn reports
-    description = 'Pushes build/reports to gh-pages using git subtree.'
+    description = 'Builds reports and force-pushes build/reports to the gh-pages branch.'
     
-    
-    commandLine 'sh', '-c', 'git add build/reports && \
+    commandLine 'sh', '-c', 'git add -f build/reports && \
                            git commit -m "Update reports for deployment" || true && \
                            git subtree push --prefix build/reports origin gh-pages'
 }
