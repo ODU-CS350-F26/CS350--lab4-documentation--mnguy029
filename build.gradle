@@ -41,7 +41,7 @@ task copyDocs(type: Copy) {
 }
 
 task copyTests(type: Copy) {
-    dependsOn test
+    dependsOn test, copyHtml, copyDocs
     from 'build/reports/tests/test'
     into 'build/reports/tests'
 }
