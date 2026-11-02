@@ -31,17 +31,23 @@ tasks.withType(Test) {
 
 task copyHtml(type: Copy) {
     from 'src/main/html'
-    into 'build/reports/tests'
+    into 'build/reports'
 }
 
 task copyDocs(type: Copy) {
     dependsOn javadoc
     from 'build/docs'
-    into 'build/reports/javadoc'
+    into 'build/reports'
+}
+
+task copyTests(type: Copy) {
+    dependsOn test
+    from 'build/reports/tests/test'
+    into 'build/reports/tests'
 }
 
 task reports {
-    dependsOn build, copyHtml, copyDocs
+    dependsOn build, copyHtml, copyDocs, copyTests
     description = 'Gathers HTML content and javadocs into build/reports.'
 }
 
