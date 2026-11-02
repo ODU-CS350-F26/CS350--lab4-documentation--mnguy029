@@ -48,11 +48,22 @@ task reports {
 
 task deployReports(type: Exec) {
     dependsOn reports
-    description = 'Builds reports and force-pushes build/reports to the gh-pages branch.'
+    description = 'Pushes build/reports to the gh-pages branch cleanly.'
     
-    commandLine 'sh', '-c', 'git add -f build/reports && \
-                           git commit -m "Update reports for deployment" || true && \
-                           git subtree push --prefix build/reports origin gh-pages'
+    commandLine 'sh', '-c', '''
+        git config user.name >/dev/null 2>&1 || git config user.name "Gradle Build"
+        git config user.email >/dev/null 2>&1 || git config user.email "gradle@build.local"
+        
+        # Temporarily stage and commit the ignored build/reports folder
+        git add -f build/reports
+        git commit -m "Temporary deployment commit" || true
+        
+        # Push the build/reports subdirectory to the gh-pages branch
+        git subtree push --prefix build/reports origin gh-pages
+        
+        # Undo the temporary commit on main so your local repository remains clean
+        git reset HEAD~1
+    '''
 }
 
 
