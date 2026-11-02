@@ -8,25 +8,9 @@ repositories {
     mavenCentral()
 }
 
-
 java {
     sourceCompatibility = JavaVersion.toVersion(11)
     targetCompatibility = JavaVersion.toVersion(11)
-}
-
-gitPublishCopy.dependsOn reports
-
-gitPublish {
-    // Your repository clone URL
-    repoUri = 'https://github.com/odu-cs350-f26/CS350--lab4-documentation--mnguy029.git'
-
-    // Branch in which to publish
-    branch = 'gh-pages'
-  
-    // What to publish (your generated reports directory)
-    contents {
-        from 'build/reports'
-    }
 }
 
 dependencies {
@@ -61,6 +45,21 @@ task reports {
     description = 'Gathers HTML content and javadocs into build/reports.'
 }
 
+
+gitPublishCopy.dependsOn reports
+
+gitPublish {
+    // Your repository clone URL
+    repoUri = 'https://github.com/odu-cs350-f26/CS350--lab4-documentation--mnguy029.git'
+
+    // Branch in which to publish
+    branch = 'gh-pages'
+  
+    // What to publish (your generated reports directory)
+    contents {
+        from 'build/reports'
+    }
+}
 
 
 task deployReports {
